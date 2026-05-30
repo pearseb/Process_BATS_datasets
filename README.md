@@ -2,7 +2,7 @@
 
 This repository is a lightweight processing workflow for building observational climatologies from Bermuda Atlantic Time-series Study (BATS), BIOS-SCOPE, and BAIT datasets.
 
-It is designed for Pearse Buchanan’s ocean biogeochemical modelling work: taking heterogeneous observational datasets from BCO-DMO and converting them into consistent monthly climatologies on standard depth grids, stored as `xarray.Dataset` objects and optionally exported to NetCDF.
+It is designed for ocean biogeochemical modelling work: taking heterogeneous observational datasets from BCO-DMO and converting them into consistent monthly climatologies on standard depth grids, stored as `xarray.Dataset` objects and optionally exported to NetCDF.
 
 ## Purpose
 
@@ -35,7 +35,7 @@ Each processing script follows the same basic logic:
 
 ### BATS pigments
 
-Script: `bats_pigments_climatology.py`
+Script: `retrieve_BATS_pigments.py`
 
 Processes the BATS HPLC and fluorometric pigment dataset.
 
@@ -59,7 +59,7 @@ month × depth
 
 ### BATS net primary production
 
-Script: `bats_npp_climatology.py`
+Script: `retrieve_BATS_primaryproduction.py`
 
 Processes the BATS primary productivity dataset from 14C incubation measurements.
 
@@ -77,7 +77,7 @@ mg C m-3 day-1
 
 ### BATS zooplankton biomass
 
-Script: `bats_zooplankton_climatology.py`
+Script: `retrieve_BATS_mesoZoo.py`
 
 Processes zooplankton biomass from net tows.
 
@@ -99,7 +99,7 @@ mg m-3
 
 ### BATS CTD variables
 
-Script: `bats_ctd_climatology.py`
+Script: `retrieve_BATS_CTD.py`
 
 Processes the BATS CTD dataset.
 
@@ -114,7 +114,7 @@ The `VARIABLES` dictionary can be edited to add additional CTD variables such as
 
 ### BATS bottle data
 
-Script: `bats_bottle_climatology.py`
+Script: `retrieve_BATS_bottle.py`
 
 Processes the BATS bottle dataset.
 
@@ -146,7 +146,7 @@ Quality flags are applied where available. Values flagged as questionable, bad, 
 
 ### BIOS-SCOPE biogeochemical survey
 
-Script: `bioscope_climatology.py`
+Script: `retrieve_BATS_bioscope.py`
 
 Processes the BIOS-SCOPE survey biogeochemical dataset.
 
@@ -172,7 +172,7 @@ This dataset is useful for microbial-loop model evaluation because it links DOC,
 
 ### BATS sinking particle fluxes
 
-Script: `bats_particle_flux_climatology.py`
+Script: `retrieve_BATS_particlefluxes.py`
 
 Processes BATS Particle Interceptor Trap System fluxes.
 
@@ -195,7 +195,7 @@ A custom depth grid can also be supplied.
 
 ### BAIT dissolved iron and ligand speciation
 
-Script: `bait_iron_climatology.py`
+Script: `retrieve_BATS_iron.py`
 
 Combines two BAIT datasets into one iron climatology:
 
@@ -215,35 +215,6 @@ Variables include:
 - `ligand2_logK`
 
 This is designed to support iron-cycle evaluation in WOMBAT, especially for representing dissolved Fe availability, isotope constraints, and ligand-mediated Fe complexation.
-
-## Example usage
-
-Most scripts follow the same pattern.
-
-```python
-from bats_bottle_climatology import build_bottle_climatology
-
-url = "https://datadocs.bco-dmo.org/dataset/3782/file/wn3zAMZuP0Arwj/3782_v9_bats_bottle.csv"
-
-ds = build_bottle_climatology(url)
-
-print(ds)
-
-ds.to_netcdf("bats_bottle_monthly_climatology.nc")
-```
-
-For the combined iron product:
-
-```python
-from bait_iron_climatology import build_bait_iron_climatology
-
-ds_fe = build_bait_iron_climatology(
-    "https://datadocs.bco-dmo.org/dataset/936824/file/rgv48kviwr3pZl/936824_v1_bait_dissolved_fe_and_isotopes.csv",
-    "https://datadocs.bco-dmo.org/dataset/869081/file/XYYPvVmsMRJ2NG/dataset_buckcaprara_bait_fespeciation-1.csv"
-)
-
-ds_fe.to_netcdf("bait_iron_monthly_climatology.nc")
-```
 
 ## Output structure
 
@@ -342,21 +313,3 @@ Quality-flag handling differs by dataset. Most scripts retain flags 1 and 2 and 
 Some variables use different units across datasets. For example, POC may be reported in micrograms per kilogram in one dataset and flux units in another. Unit conversion should be handled explicitly before cross-dataset comparison.
 
 The climatologies are sparse for datasets with only a few cruises, especially BAIT iron data. A monthly climatology from four seasonal cruises should be interpreted as a seasonal snapshot, not a robust multi-decadal mean.
-
-## Suggested next step
-
-Create one wrapper notebook that imports each processor, builds each climatology, and writes all outputs to a common `processed/` directory:
-
-```text
-processed/
-  bats_pigments_monthly_climatology.nc
-  bats_npp_monthly_climatology.nc
-  bats_zooplankton_monthly_climatology.nc
-  bats_ctd_monthly_climatology.nc
-  bats_bottle_monthly_climatology.nc
-  bioscope_monthly_climatology.nc
-  bats_particle_flux_monthly_climatology.nc
-  bait_iron_monthly_climatology.nc
-```
-
-That wrapper notebook can become the main reproducible workflow for generating BATS observational products for model-data comparison.
